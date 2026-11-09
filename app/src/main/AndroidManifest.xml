@@ -11,6 +11,10 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     
+    <!-- Dozvole za Foreground servis i medije na novijim Android verzijama -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    
     <!-- Dozvola za skladište (opciono za starije verzije Android 9 i niže) -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
@@ -40,6 +44,13 @@
             </intent-filter>
 
         </activity>
+
+        <!-- Registrovani Foreground servis za pozadinsku reprodukciju -->
+        <service 
+            android:name="com.webhtml.app.MediaService"
+            android:foregroundServiceType="mediaPlayback" 
+            android:exported="false" />
+
     </application>
 
 </manifest>
