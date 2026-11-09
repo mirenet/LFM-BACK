@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT));
 
         // 1. Donji WebView (Glavni sadržaj) sa PullRefresh omotačem
-        webView = new WebView(this);
+        webView = new KeepAliveWebView(this);
         webView.setBackgroundColor(Color.parseColor("#070707"));
         webView.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // 2. Gornji WebView (Učitava menu.html OBAVEZNO sa ?menu=true parametrom)
-        overlayWebView = new WebView(this);
+        overlayWebView = new KeepAliveWebView(this);
         overlayWebView.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
