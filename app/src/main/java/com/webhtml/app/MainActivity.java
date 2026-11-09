@@ -350,13 +350,42 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
 
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                if (url != null && url.startsWith("file://") && view == webView) {
-                    view.evaluateJavascript("window.webhtml = true;", null);
-                }
-            }
+@Override
+public void onPageFinished(WebView view, String url) {
+    super.onPageFinished(view, url);
+    
+    if (view == webView) {
+        if (url != null && url.startsWith("file://")) {
+            view.evaluateJavascript("window.webhtml = true;", null);
+        }
+        
+        // AGRESIVNA JS ZAŠTITA ZA POZADINSKU REPRODUKCIJU
+        String antiPauseJs = 
+            "(function() {" +
+            "   try {" +
+            "       Object.defineProperty(document, 'hidden', { get: function() { return false; }, configurable: true });" +
+            "       Object.defineProperty(document, 'visibilityState', { get: function() { return 'visible'; }, configurable: true });" +
+            "       Object.defineProperty(document, 'webkitHidden', { get: function() { return false; }, configurable: true });" +
+            "       Object.defineProperty(document, 'webkitVisibilityState', { get: function() { return 'visible'; }, configurable: true });" +
+            "       " +
+            "       window.addEventListener('visibilitychange', function(e) { e.stopImmediatePropagation(); }, true);" +
+            "       document.addEventListener('visibilitychange', function(e) { e.stopImmediatePropagation(); }, true);" +
+            "       window.addEventListener('blur', function(e) { e.stopImmediatePropagation(); }, true);" +
+            "       " +
+            "       setInterval(function() {" +
+            "           if (document.hidden) {" +
+            "               Object.defineProperty(document, 'hidden', { get: function() { return false; }, configurable: true });" +
+            "           }" +
+            "           if (document.visibilityState !== 'visible') {" +
+            "               Object.defineProperty(document, 'visibilityState', { get: function() { return 'visible'; }, configurable: true });" +
+            "           }" +
+            "       }, 500);" +
+            "   } catch(err) {}" +
+            "})();";
+            
+        view.evaluateJavascript(antiPauseJs, null);
+    }
+}
             
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
@@ -726,11 +755,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        if (webView != null) webView.onPause();
-        if (overlayWebView != null) overlayWebView.onPause();
-    }
+protected void onPause() {
+    super.onPause();
+    // NE POZIVAMO webView.onPause() da ne bismo uspavali JavaScript i medije!
+    // Umesto toga, samo obaveštavamo sistem da je Activity pauziran, ali WebView drži tok.
+    if (overlayWebView != null) overlayWebView.onPause();
+}
 
     @Override
     protected void onResume() {
