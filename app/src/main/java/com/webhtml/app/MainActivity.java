@@ -769,6 +769,19 @@ protected void onPause() {
         if (overlayWebView != null) overlayWebView.onResume();
     }
 
+@Override
+protected void onUserLeaveHint() {
+    super.onUserLeaveHint();
+    
+    // Kada korisnik pritisne Home taster, palimo Foreground servis da drži aplikaciju budnom
+    Intent serviceIntent = new Intent(this, MediaService.class);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        startForegroundService(serviceIntent);
+    } else {
+        startService(serviceIntent);
+    }
+}
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
