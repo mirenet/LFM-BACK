@@ -362,27 +362,35 @@ public void onPageFinished(WebView view, String url) {
         
         // AGRESIVNA JS ZAŠTITA ZA POZADINSKU REPRODUKCIJU
         String antiPauseJs = 
-            "(function() {" +
-            "   try {" +
-            "       Object.defineProperty(document, 'hidden', { get: function() { return false; }, configurable: true });" +
-            "       Object.defineProperty(document, 'visibilityState', { get: function() { return 'visible'; }, configurable: true });" +
-            "       Object.defineProperty(document, 'webkitHidden', { get: function() { return false; }, configurable: true });" +
-            "       Object.defineProperty(document, 'webkitVisibilityState', { get: function() { return 'visible'; }, configurable: true });" +
-            "       " +
-            "       window.addEventListener('visibilitychange', function(e) { e.stopImmediatePropagation(); }, true);" +
-            "       document.addEventListener('visibilitychange', function(e) { e.stopImmediatePropagation(); }, true);" +
-            "       window.addEventListener('blur', function(e) { e.stopImmediatePropagation(); }, true);" +
-            "       " +
-            "       setInterval(function() {" +
-            "           if (document.hidden) {" +
-            "               Object.defineProperty(document, 'hidden', { get: function() { return false; }, configurable: true });" +
-            "           }" +
-            "           if (document.visibilityState !== 'visible') {" +
-            "               Object.defineProperty(document, 'visibilityState', { get: function() { return 'visible'; }, configurable: true });" +
-            "           }" +
-            "       }, 500);" +
-            "   } catch(err) {}" +
-            "})();";
+    "(function() {" +
+    "   try {" +
+    "       Object.defineProperty(document, 'hidden', { get: function() { return false; }, configurable: true });" +
+    "       Object.defineProperty(document, 'visibilityState', { get: function() { return 'visible'; }, configurable: true });" +
+    "       Object.defineProperty(document, 'webkitHidden', { get: function() { return false; }, configurable: true });" +
+    "       Object.defineProperty(document, 'webkitVisibilityState', { get: function() { return 'visible'; }, configurable: true });" +
+    "       " +
+    "       window.addEventListener('visibilitychange', function(e) { e.stopImmediatePropagation(); }, true);" +
+    "       document.addEventListener('visibilitychange', function(e) { e.stopImmediatePropagation(); }, true);" +
+    "       window.addEventListener('blur', function(e) { e.stopImmediatePropagation(); }, true);" +
+    "       window.addEventListener('pagehide', function(e) { e.stopImmediatePropagation(); }, true);" +
+    "       " +
+    "       setInterval(function() {" +
+    "           if (document.hidden) {" +
+    "               Object.defineProperty(document, 'hidden', { get: function() { return false; }, configurable: true });" +
+    "           }" +
+    "           if (document.visibilityState !== 'visible') {" +
+    "               Object.defineProperty(document, 'visibilityState', { get: function() { return 'visible'; }, configurable: true });" +
+    "           }" +
+    "           // Agresivno tražimo video/audio elemente i ako su pauzirani a trebalo bi da sviraju, teramo ih da nastave" +
+    "           var videos = document.querySelectorAll('video, audio');" +
+    "           for(var i=0; i<videos.length; i++) {" +
+    "               if(videos[i].paused && videos[i].currentTime > 0 && !videos[i].ended && videos[i].readyState > 2) {" +
+    "                   videos[i].play().catch(function(e){});" +
+    "               }" +
+    "           }" +
+    "        }, 300);" +
+    "   } catch(err) {}" +
+    "})();";
             
         view.evaluateJavascript(antiPauseJs, null);
     }
@@ -762,6 +770,13 @@ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         } catch (Exception ignored) {}
         return list;
     }
+
+    @Override
+protected void onStop() {
+    super.onStop();
+    // Namerno ostavljamo prazno da Android / Chromium ne pomisle
+    // da treba da ugase medijske resurse kada Activity ode u pozadinu.
+}
 
     @Override
 protected void onPause() {
