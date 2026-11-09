@@ -220,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
 
         webView.addJavascriptInterface(downloadHelper, "AndroidBridge");
         webView.addJavascriptInterface(new ConfigSaverInterface(this), "AndroidBridgeSaver");
-
+        
         getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
